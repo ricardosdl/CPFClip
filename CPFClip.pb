@@ -77,21 +77,31 @@ Procedure.a ProcessClipBoard()
   Next i
   
   If OpenedClipBoard <> 0
-    Protected TextMemory.i = GetClipboardData_(#CF_TEXT)
+    Protected TextMemory.q = GetClipboardData_(#CF_TEXT)
+    PrintN("===============================")
+    PrintN(FormatDate("%hh:%ii:%ss", Date()))
+    PrintN("called GetClipboardData_:" + Str(TextMemory))
     If TextMemory = #Null
+      PrintN("TextMemory is null, bailed out")
       CloseClipboard_()
       ProcedureReturn #False
     EndIf
     
-    Protected LockedTextMemory.i = GlobalLock_(TextMemory)
-    Protected TextSize.i = GlobalSize_(TextMemory)
-    If LockedTextMemory <> #Null
+    Protected *LockedTextMemory = GlobalLock_(TextMemory)
+    PrintN("called GlobalLock_:" + Str(*LockedTextMemory))
+    Protected TextSize.q = GlobalSize_(TextMemory)
+    PrintN("called globalsize_:" + Str(TextSize))
+    If *LockedTextMemory <> #Null
       Protected *Buffer = AllocateMemory(TextSize)
-      
-      lstrcpy_(*Buffer, LockedTextMemory)
+      PrintN("called allocatememory *Buffer is:" + Str(*Buffer))
+      lstrcpy_(*Buffer, *LockedTextMemory)
+      PrintN("called lstrcpy_")
       GlobalUnlock_(TextMemory)
+      PrintN("called GlobalUnlock_(TextMemory)")
       Protected PotentialCPF.s = PeekS(*Buffer, -1, #PB_Ascii)
+      PrintN("called PeekS(*Buffer, -1, #PB_Ascii)")
       FreeMemory(*Buffer)
+      PrintN("freed *buffer")
       
       Protected CPF.s = ExtractPotentialCPF(PotentialCPF)
       If Len(CPF) = 0
@@ -102,22 +112,33 @@ Procedure.a ProcessClipBoard()
       
       
       Protected *CPFBuffer = AllocateMemory(Len(CPF) + 1)
+      PrintN("called AllocateMemory(Len(CPF) + 1)")
       PokeS(*CPFBuffer, CPF, 11, #PB_Ascii)
-      
+      PrintN("called PokeS(*CPFBuffer, CPF, 11, #PB_Ascii)")
+      PrintN("allocated and copied the cpf to *CPFBuffer")
       Protected CPFCopy = GlobalAlloc_(#GMEM_MOVEABLE, Len(CPF) + 1)
       If CPFCopy = #Null
         CloseClipboard_()
         ProcedureReturn #False
       EndIf
       
+      PrintN("called globalalloc and cpfcopy is :" + Str(CPFCopy))
+      
       Protected CPFCopyLocked = GlobalLock_(CPFCopy)
+      PrintN("called GlobalLock_ and CPFCopyLocked is :" + Str(CPFCopyLocked))
       ;lstrcpy_(CPFCopyLocked, *CPFBuffer)
       CopyMemory(*CPFBuffer, CPFCopyLocked, Len(CPF) + 1)
+      PrintN("copied from cpfbuffer to cpfcopylocked")
       FreeMemory(*CPFBuffer)
+      PrintN("freed *cpfbuffer")
       GlobalUnlock_(CPFCopy)
+      PrintN("unlcoked CPFCopy")
       EmptyClipboard_()
+      PrintN("calld EmptyClipboard")
       SetClipboardData_(#CF_TEXT, CPFCopy)
+      PrintN("called SetClipboardData_")
       CloseClipboard_()
+      PrintN("called CloseClipboard_")
       ProcedureReturn #True
     Else
       CloseClipboard_()
@@ -148,6 +169,7 @@ EndIf
 
 
 OpenWindow(#WindowNum, 0, 0, 200, 100, "CPFClip", #PB_Window_SystemMenu | #PB_Window_ScreenCentered)
+OpenConsole()
 
 Global ClipboardListenerAdded.l = AddClipboardFormatListener_(WindowID(#WindowNum))
 
