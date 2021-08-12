@@ -191,6 +191,7 @@ Repeat
       
       
   EndSelect
+  Delay(10)
 Until Exit
 
 
