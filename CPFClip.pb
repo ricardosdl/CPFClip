@@ -92,7 +92,7 @@ Procedure.a ProcessClipBoard()
     Protected TextSize.q = GlobalSize_(TextMemory)
     PrintN("called globalsize_:" + Str(TextSize))
     If *LockedTextMemory <> #Null
-      Protected *Buffer = AllocateMemory(TextSize)
+      Protected *Buffer = AllocateMemory(TextSize + 1)
       PrintN("called allocatememory *Buffer is:" + Str(*Buffer))
       lstrcpy_(*Buffer, *LockedTextMemory)
       PrintN("called lstrcpy_")
