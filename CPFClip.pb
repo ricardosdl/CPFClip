@@ -77,26 +77,27 @@ Procedure.a ProcessClipBoard()
   Next i
   
   If OpenedClipBoard <> 0
-    Protected TextMemory.q = GetClipboardData_(#CF_TEXT)
+    Protected *TextMemoryHandle = GetClipboardData_(#CF_TEXT)
     PrintN("===============================")
     PrintN(FormatDate("%hh:%ii:%ss", Date()))
-    PrintN("called GetClipboardData_:" + Str(TextMemory))
-    If TextMemory = #Null
+    PrintN("called GetClipboardData_:" + Str(*TextMemoryHandle))
+    If *TextMemoryHandle = #Null
       PrintN("TextMemory is null, bailed out")
       CloseClipboard_()
       ProcedureReturn #False
     EndIf
     
-    Protected *LockedTextMemory = GlobalLock_(TextMemory)
+    Protected *LockedTextMemory = GlobalLock_(*TextMemoryHandle)
     PrintN("called GlobalLock_:" + Str(*LockedTextMemory))
-    Protected TextSize.q = GlobalSize_(TextMemory)
+    Protected TextSize.q = GlobalSize_(*TextMemoryHandle)
     PrintN("called globalsize_:" + Str(TextSize))
     If *LockedTextMemory <> #Null
       Protected *Buffer = AllocateMemory(TextSize + 1)
       PrintN("called allocatememory *Buffer is:" + Str(*Buffer))
-      lstrcpy_(*Buffer, *LockedTextMemory)
+      ;lstrcpy_(*Buffer, *LockedTextMemory)
+      CopyMemory(*LockedTextMemory, *Buffer, TextSize + 1)
       PrintN("called lstrcpy_")
-      GlobalUnlock_(TextMemory)
+      GlobalUnlock_(*TextMemoryHandle)
       PrintN("called GlobalUnlock_(TextMemory)")
       Protected PotentialCPF.s = PeekS(*Buffer, -1, #PB_Ascii)
       PrintN("called PeekS(*Buffer, -1, #PB_Ascii)")
